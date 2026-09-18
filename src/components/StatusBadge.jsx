@@ -4,6 +4,9 @@ const STATUS_STYLES = {
   interview: "bg-purple-100 text-purple-700",
   rejected: "bg-red-100 text-red-700",
   hired: "bg-green-100 text-green-700",
+  // Frozen because the candidate was hired for a different role. Grey
+  // rather than red — it isn't a rejection, and shouldn't read as one.
+  blocked: "bg-gray-200 text-gray-600",
 };
 
 export default function StatusBadge({ status }) {

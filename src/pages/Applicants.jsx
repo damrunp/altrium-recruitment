@@ -261,7 +261,8 @@ export default function Applicants() {
       <div className="space-y-3">
         {sortedApplications.map((app) => {
           const appInterviews = interviewsFor(app.application_id);
-          const canFinalize = isHR && readyToFinalize(app.application_id);
+          const isBlocked = app.status === "blocked";
+          const canFinalize = isHR && !isBlocked && readyToFinalize(app.application_id);
           const failed = anyInterviewFailed(app.application_id);
           const isFinal = app.status === "hired" || app.status === "rejected";
 
@@ -288,7 +289,7 @@ export default function Applicants() {
                     View CV
                   </button>
 
-                  {isHR && app.status === "interview" && (
+                  {isHR && !isBlocked && app.status === "interview" && (
                     <Link
                       to={`/dashboard/applications/${app.application_id}/schedule`}
                       className="btn-outline !px-4 !py-2 text-sm"
@@ -297,7 +298,7 @@ export default function Applicants() {
                     </Link>
                   )}
 
-                  {isHR && !isFinal && (canFinalize || failed) && (
+                  {isHR && !isFinal && !isBlocked && (canFinalize || failed) && (
                     <button
                       onClick={() => setFinalizing(app)}
                       className="btn-primary !px-4 !py-2 text-sm"
@@ -309,8 +310,12 @@ export default function Applicants() {
                   {/* Always available to HR, including after a rejection —
                       picking "pending" puts someone straight back in the
                       pipeline. 'hired' isn't here; use Finalize for that
-                      so the offer email goes with it. */}
-                  {isHR && (
+                      so the offer email goes with it.
+
+                      Blocked applications show no control at all: the
+                      database refuses every update to them, so offering
+                      one would just produce an error. */}
+                  {isHR && !isBlocked && (
                     <select
                       disabled={updatingId === app.application_id}
                       value={app.status}
@@ -333,6 +338,17 @@ export default function Applicants() {
                   <StatusBadge status={app.status} />
                 </div>
               </div>
+
+              {/* Explain the lock, otherwise a greyed-out row with no
+                  controls just looks broken. */}
+              {isBlocked && (
+                <div className="mt-4 pt-4 border-t border-ink/10">
+                  <p className="text-sm text-ink/60">
+                    <span className="font-semibold">Blocked.</span> This candidate was hired
+                    for another role, so this application is locked and can't be changed.
+                  </p>
+                </div>
+              )}
 
               {/* Interview progress */}
               {appInterviews.length > 0 && (

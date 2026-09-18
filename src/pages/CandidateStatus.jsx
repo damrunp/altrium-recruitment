@@ -75,6 +75,12 @@ export default function CandidateStatus() {
                 <StatusBadge status={app.status} />
               </div>
 
+              {app.status === "blocked" && (
+                <p className="mt-3 text-sm text-ink/60 bg-ink/[0.03] rounded-lg px-4 py-3">
+                  You've accepted a role with us elsewhere, so this application is closed. Congratulations.
+                </p>
+              )}
+
               {appInterviews.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-ink/10 space-y-3">
                   <p className="text-sm font-semibold">Your interviews</p>

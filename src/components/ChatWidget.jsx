@@ -49,6 +49,20 @@ export default function ChatWidget() {
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
+  // The panel has to stay in the DOM while it animates shut, so opening
+  // and "is it rendered" are two separate things.
+  const [rendered, setRendered] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setRendered(true);
+      return;
+    }
+    // Matches the longest CSS transition below.
+    const timer = setTimeout(() => setRendered(false), 300);
+    return () => clearTimeout(timer);
+  }, [open]);
+
   const isLoggedIn = Boolean(session);
 
   // Everything the rule-based layer needs to answer.
@@ -213,21 +227,59 @@ export default function ChatWidget() {
   return (
     <>
       {/* Launcher */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Close chat" : "Open chat"}
-        aria-expanded={open}
-        className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-gold text-ink shadow-lg hover:shadow-xl flex items-center justify-center transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
-      >
-        {open ? <CloseIcon /> : <ChatIcon />}
-      </button>
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
+        {/* A label that fades away once someone has opened the chat, so
+            the button is findable without hunting the corners. */}
+        {!open && messages.length === 0 && (
+          <span className="hidden sm:block bg-ink text-white text-sm font-medium px-3.5 py-2 rounded-xl shadow-lg">
+            Need help?
+          </span>
+        )}
+
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? "Close chat" : "Open chat"}
+          aria-expanded={open}
+          className="relative w-16 h-16 rounded-full bg-gold text-ink shadow-[0_8px_24px_-6px_rgba(0,0,0,0.45)] hover:shadow-[0_12px_32px_-6px_rgba(0,0,0,0.5)] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+        >
+          {/* Slow halo so the button registers in peripheral vision. */}
+          {!open && (
+            <>
+              <span className="absolute inset-0 rounded-full bg-gold animate-ping opacity-20" style={{ animationDuration: "2.5s" }} />
+              <span className="absolute inset-0 rounded-full ring-4 ring-gold/30" />
+            </>
+          )}
+
+          <span
+            className="relative transition-transform duration-300"
+            style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
+          >
+            {open ? <CloseIcon /> : <ChatIcon />}
+          </span>
+        </button>
+      </div>
 
       {/* Panel */}
-      {open && (
+      {rendered && (
         <div
           role="dialog"
           aria-label="Careers assistant"
-          className="fixed bottom-24 right-5 z-50 flex flex-col w-[min(384px,calc(100vw-2.5rem))] h-[min(560px,calc(100vh-9rem))] rounded-2xl bg-white border border-ink/10 shadow-2xl overflow-hidden"
+          className="fixed bottom-28 right-6 z-50 flex flex-col w-[min(384px,calc(100vw-3rem))] h-[min(560px,calc(100vh-10rem))] rounded-2xl bg-white border border-ink/10 shadow-2xl overflow-hidden"
+          style={{
+            // Grows out of the launcher and collapses back into it. The
+            // origin sits on the launcher's centre, so it genuinely
+            // expands from the icon rather than from the panel's corner.
+            transformOrigin: "calc(100% - 2rem) calc(100% + 3.5rem)",
+            opacity: open ? 1 : 0,
+            transform: open
+              ? "scale(1) translateY(0)"
+              : "scale(0.2) translateY(8px)",
+            transition: open
+              ? "opacity 180ms ease-out, transform 420ms cubic-bezier(0.16,1,0.3,1)"
+              : "opacity 160ms ease-in, transform 260ms cubic-bezier(0.4,0,1,1)",
+            pointerEvents: open ? "auto" : "none",
+            willChange: "transform, opacity",
+          }}
         >
           <div className="flex items-center justify-between px-5 py-4 bg-ink text-white shrink-0">
             <div>
