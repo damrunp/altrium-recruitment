@@ -211,9 +211,10 @@ ${candidateContext}`,
       generationConfig: {
         temperature: 0.3,
         maxOutputTokens: MAX_OUTPUT_TOKENS,
-        // Thinking tokens bill as output tokens. This bot reads a job
-        // description and answers — it doesn't need to deliberate.
-        thinkingConfig: { thinkingBudget: 0 },
+        // No thinkingConfig here: the Gemini 3.x models reject it with a
+        // 400. If you move to a model that supports it, adding
+        // `thinkingConfig: { thinkingBudget: 0 }` keeps thinking tokens
+        // (which bill at output rates) out of the response.
       },
     };
 
@@ -238,7 +239,9 @@ ${candidateContext}`,
 
     if (!geminiRes.ok) {
       const detail = await geminiRes.text();
-      console.error("Gemini error", geminiRes.status, detail);
+      // Logged in full — Vercel truncates the summary line, and the body
+      // is where Gemini says which parameter it didn't like.
+      console.error("Gemini error", geminiRes.status, MODEL, detail);
       return res.status(502).json({
         error: "I couldn't answer that one. Try rephrasing, or email hello@altrium.io.",
       });

@@ -13,7 +13,7 @@ export default function Navbar() {
   const canSeeDashboard = isHR || isManagement;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-ink/10 text-ink shadow-sm">
+    <header className="sticky top-0 z-40 bg-white/55 backdrop-blur-xl backdrop-saturate-150 border-b border-white/40 text-ink shadow-[0_1px_16px_-8px_rgba(0,0,0,0.25)]">
       <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2.5 font-display font-bold text-xl">
           <Logo className="h-9 w-auto" />
@@ -22,6 +22,10 @@ export default function Navbar() {
         <nav className="flex items-center gap-1 sm:gap-2 text-sm font-medium">
           <Link to="/" className={linkClass}>
             Jobs
+          </Link>
+
+          <Link to="/about" className={linkClass}>
+            About
           </Link>
 
           {session && !isStaff && (

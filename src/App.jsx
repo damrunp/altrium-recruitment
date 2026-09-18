@@ -5,6 +5,7 @@ import ChatWidget from "./components/ChatWidget";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 import Home from "./pages/Home";
+import About from "./pages/About";
 import JobDetail from "./pages/JobDetail";
 import AuthPage from "./pages/AuthPage";
 import ApplicationForm from "./pages/ApplicationForm";
@@ -27,6 +28,7 @@ export default function App() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
           <Route path="/jobs/:jobId" element={<JobDetail />} />
           <Route path="/auth" element={<AuthPage />} />
 
