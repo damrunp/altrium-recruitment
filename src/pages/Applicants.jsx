@@ -8,10 +8,12 @@ import { formatDateTime } from "../lib/interviews";
 
 const STATUS_PROGRESS_ORDER = ["pending", "shortlisted", "interview", "hired", "rejected"];
 
-// HR moves candidates through these by hand. 'hired' and 'rejected' are
-// final outcomes and go through the finalize flow instead, so an email
-// always accompanies them.
-const MANUAL_STATUSES = ["pending", "shortlisted", "interview"];
+// HR can move a candidate to any of these by hand, at any time —
+// including back to pending after a rejection. 'hired' is deliberately
+// absent: it goes through Finalize so an offer email always accompanies
+// it, and the database trigger rejects it anyway until both interviews
+// have passed.
+const MANUAL_STATUSES = ["pending", "shortlisted", "interview", "rejected"];
 
 function ScoreBadge({ score }) {
   if (score === null || score === undefined) {
@@ -37,7 +39,7 @@ export default function Applicants() {
   const [finalizing, setFinalizing] = useState(null);
   const [sortBy, setSortBy] = useState("score_desc");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [threshold, setThreshold] = useState(40);
+  const [threshold, setThreshold] = useState(20);
 
   const load = async () => {
     setLoading(true);
@@ -304,17 +306,23 @@ export default function Applicants() {
                     </button>
                   )}
 
-                  {/* Only the in-progress statuses are hand-editable.
-                      Hiring and rejecting go through Finalize so the
-                      candidate always gets told. */}
-                  {isHR && !isFinal && (
+                  {/* Always available to HR, including after a rejection —
+                      picking "pending" puts someone straight back in the
+                      pipeline. 'hired' isn't here; use Finalize for that
+                      so the offer email goes with it. */}
+                  {isHR && (
                     <select
                       disabled={updatingId === app.application_id}
                       value={app.status}
                       onChange={(e) => handleStatusChange(app.application_id, e.target.value)}
                       className="input-field !py-2 text-sm w-auto"
                     >
-                      {MANUAL_STATUSES.map((s) => (
+                      {/* Keep the current value selectable so the control
+                          shows the right thing for a hired candidate. */}
+                      {(MANUAL_STATUSES.includes(app.status)
+                        ? MANUAL_STATUSES
+                        : [app.status, ...MANUAL_STATUSES]
+                      ).map((s) => (
                         <option key={s} value={s}>
                           {s}
                         </option>
