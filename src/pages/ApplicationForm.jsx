@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { extractPdfText, computeMatchScore } from "../lib/cvScoring";
+import GradientBackdrop from "../components/GradientBackdrop";
+
+const GLASS = "rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl";
 
 // Sri Lankan NIC: old format 9 digits + V/X, or new format 12 digits
 const NIC_REGEX = /^(?:\d{9}[VXvx]|\d{12})$/;
@@ -102,78 +105,108 @@ export default function ApplicationForm() {
 
   if (submitted === true) {
     return (
-      <div className="max-w-lg mx-auto px-5 py-20 text-center">
-        <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-5 text-3xl">
-          ✓
-        </div>
-        <h1 className="font-display text-2xl font-bold mb-2">Application Submitted!</h1>
-        <p className="text-ink/60 mb-8">
-          Thank you for applying{job ? ` for ${job.title}` : ""}. You can track your
-          application status anytime from your dashboard.
-        </p>
-        <div className="flex gap-3 justify-center">
-          <Link to="/status" className="btn-primary">Check My Status</Link>
-          <Link to="/" className="btn-outline">Browse More Jobs</Link>
+      <div className="relative overflow-hidden min-h-[80vh]">
+        <GradientBackdrop />
+
+        <div className="relative z-10 max-w-lg mx-auto px-5 py-20">
+          <div className={`${GLASS} p-10 text-center`}>
+            <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-5 text-3xl">
+              ✓
+            </div>
+            <h1 className="font-display text-2xl font-bold mb-2">Application Submitted!</h1>
+            <p className="text-ink/60 mb-8">
+              Thank you for applying{job ? ` for ${job.title}` : ""}. You can track your
+              application status anytime from your dashboard.
+            </p>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <Link to="/status" className="btn-primary">
+                Check My Status
+              </Link>
+              <Link to="/#open-positions" className="btn-outline">
+                Browse More Jobs
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-12">
-      <Link to={`/jobs/${jobId}`} className="text-sm text-ink/50 hover:text-gold-700">← Back to job</Link>
+    <div className="relative overflow-hidden min-h-[80vh]">
+      <GradientBackdrop />
 
-      <h1 className="font-display text-2xl font-bold mt-3 mb-1">
-        Apply {job ? `for ${job.title}` : ""}
-      </h1>
-      <p className="text-ink/50 mb-8">Fill in your details below to submit your application.</p>
+      <div className="relative z-10 max-w-lg mx-auto px-5 py-12">
+        <Link to={`/jobs/${jobId}`} className="text-sm text-ink/50 hover:text-gold-700">
+          ← Back to job
+        </Link>
 
-      {error && (
-        <div className="mb-5 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>
-      )}
-      {submitted === false && (
-        <div className="mb-5 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">
-          Your application could not be submitted. Please try again.
-        </div>
-      )}
+        <h1 className="font-display text-2xl font-bold mt-3 mb-1">
+          Apply {job ? `for ${job.title}` : ""}
+        </h1>
+        <p className="text-ink/50 mb-8">Fill in your details below to submit your application.</p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="text-sm font-medium mb-1 block">Full name</label>
-          <input required className="input-field" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-        </div>
+        {error && (
+          <div className="mb-5 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>
+        )}
+        {submitted === false && (
+          <div className="mb-5 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">
+            Your application could not be submitted. Please try again.
+          </div>
+        )}
 
-        <div>
-          <label className="text-sm font-medium mb-1 block">NIC (LK)</label>
-          <input
-            required
-            placeholder="200012345678 or 991234567V"
-            className="input-field"
-            value={nic}
-            onChange={(e) => setNic(e.target.value)}
-          />
-        </div>
+        <form onSubmit={handleSubmit} className={`${GLASS} p-6 sm:p-8 space-y-4`}>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Full name</label>
+            <input
+              required
+              className="input-field bg-white/70"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
 
-        <div>
-          <label className="text-sm font-medium mb-1 block">Email</label>
-          <input required type="email" className="input-field" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
+          <div>
+            <label className="text-sm font-medium mb-1 block">NIC (LK)</label>
+            <input
+              required
+              placeholder="200012345678 or 991234567V"
+              className="input-field bg-white/70"
+              value={nic}
+              onChange={(e) => setNic(e.target.value)}
+            />
+          </div>
 
-        <div>
-          <label className="text-sm font-medium mb-1 block">CV (PDF only)</label>
-          <input
-            required
-            type="file"
-            accept="application/pdf"
-            className="input-field file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-gold file:text-ink file:font-semibold"
-            onChange={(e) => setCvFile(e.target.files?.[0] || null)}
-          />
-        </div>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Email</label>
+            <input
+              required
+              type="email"
+              className="input-field bg-white/70"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-        <button disabled={submitting} className="btn-primary w-full !py-3 mt-2">
-          {submitting ? "Submitting…" : "Submit Application"}
-        </button>
-      </form>
+          <div>
+            <label className="text-sm font-medium mb-1 block">CV (PDF only)</label>
+            <input
+              required
+              type="file"
+              accept="application/pdf"
+              className="input-field bg-white/70 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-gold file:text-ink file:font-semibold"
+              onChange={(e) => setCvFile(e.target.files?.[0] || null)}
+            />
+            <p className="text-xs text-ink/40 mt-1">
+              A text-based PDF scores better than a scanned one.
+            </p>
+          </div>
+
+          <button disabled={submitting} className="btn-primary w-full !py-3 mt-2">
+            {submitting ? "Submitting…" : "Submit Application"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import GradientBackdrop from "../components/GradientBackdrop";
 
 export default function JobDetail() {
   const { jobId } = useParams();
@@ -41,20 +42,41 @@ export default function JobDetail() {
     navigate(`/apply/${jobId}`);
   };
 
-  if (loading) return <p className="max-w-3xl mx-auto px-5 py-16 text-ink/50">Loading…</p>;
-  if (!job)
+  // Same gradient wash as the listings, so opening a job feels like
+  // staying in the same place rather than landing somewhere new.
+  const Shell = ({ children }) => (
+    <div className="relative overflow-hidden min-h-[70vh]">
+      <GradientBackdrop />
+      <div className="relative z-10 max-w-3xl mx-auto px-5 py-12">{children}</div>
+    </div>
+  );
+
+  if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-5 py-16">
-        <p className="text-ink/60">Job not found.</p>
-        <Link to="/" className="text-gold-700 font-semibold">← Back to jobs</Link>
-      </div>
+      <Shell>
+        <p className="text-ink/50">Loading…</p>
+      </Shell>
     );
+  }
+
+  if (!job) {
+    return (
+      <Shell>
+        <p className="text-ink/60 mb-3">Job not found.</p>
+        <Link to="/#open-positions" className="text-gold-700 font-semibold">
+          ← Back to jobs
+        </Link>
+      </Shell>
+    );
+  }
 
   return (
-    <div className="max-w-3xl mx-auto px-5 py-12">
-      <Link to="/" className="text-sm text-ink/50 hover:text-gold-700">← Back to all jobs</Link>
+    <Shell>
+      <Link to="/#open-positions" className="text-sm text-ink/50 hover:text-gold-700">
+        ← Back to all jobs
+      </Link>
 
-      <div className="card p-8 mt-4">
+      <div className="rounded-2xl border border-white/70 bg-white/60 backdrop-blur-xl p-8 mt-4 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.4)]">
         <h1 className="font-display text-3xl font-bold mb-2">{job.title}</h1>
         {job.location && <p className="text-ink/50 mb-6">{job.location}</p>}
 
@@ -79,7 +101,7 @@ export default function JobDetail() {
           </button>
         )}
       </div>
-    </div>
+    </Shell>
   );
 }
 

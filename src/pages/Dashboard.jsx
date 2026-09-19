@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import GradientBackdrop from "../components/GradientBackdrop";
 
 const ROLE_LABELS = {
   hr: "HR",
@@ -49,7 +50,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-5 py-12">
+    <div className="relative overflow-hidden min-h-[80vh]">
+      <GradientBackdrop />
+      <div className="relative z-10 max-w-6xl mx-auto px-5 py-12">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
         <div>
           <h1 className="font-display text-2xl font-bold">Recruitment Dashboard</h1>
@@ -80,7 +83,7 @@ export default function Dashboard() {
         {jobs.map((job) => (
           <div
             key={job.job_id}
-            className="card p-5 flex items-center justify-between flex-wrap gap-4"
+            className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-5 flex items-center justify-between flex-wrap gap-4 hover:bg-white/75 transition-colors"
           >
             <div className="min-w-[200px]">
               <div className="flex items-center gap-2">
@@ -136,8 +139,9 @@ export default function Dashboard() {
       </div>
 
       {!loading && jobs.length === 0 && (
-        <div className="card p-10 text-center text-ink/50">No jobs posted yet.</div>
+        <div className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-10 text-center text-ink/50">No jobs posted yet.</div>
       )}
+    </div>
     </div>
   );
 }

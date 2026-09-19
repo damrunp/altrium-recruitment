@@ -126,7 +126,7 @@ function Reveal({ children, delay = 0, className = "" }) {
       style={{
         opacity: shown ? 1 : 0,
         transform: shown ? "translateY(0)" : "translateY(24px)",
-        transition: `opacity 700ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 700ms cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        transition: `opacity 910ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 910ms cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
       }}
     >
       {children}
@@ -145,24 +145,36 @@ export default function About() {
           <div className="absolute bottom-[-200px] left-1/3 w-[560px] h-[560px] rounded-full bg-gradient-to-t from-gold-700 to-transparent opacity-20 blur-[130px]" />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-5 py-20 sm:py-28">
+        {/* Fades the dark section into the white one below. A long ramp
+            with several stops, rather than a short three-stop gradient —
+            a short one leaves a visible grey band where the mid-colour
+            sits, which is what makes it look painted on. */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-72"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.08) 48%, rgba(255,255,255,0.22) 62%, rgba(255,255,255,0.48) 74%, rgba(255,255,255,0.78) 86%, rgba(255,255,255,0.95) 94%, #ffffff 100%)",
+          }}
+        />
+
+        <div className="relative max-w-6xl mx-auto px-5 pt-20 pb-32 sm:pt-28 sm:pb-40">
           <Reveal>
             <p className="text-gold font-semibold tracking-wide uppercase text-sm mb-4">
               {HERO.eyebrow}
             </p>
           </Reveal>
 
-          <Reveal delay={100}>
+          <Reveal delay={130}>
             <h1 className="font-display text-4xl sm:text-6xl font-bold max-w-3xl leading-[1.05]">
               {HERO.heading}
             </h1>
           </Reveal>
 
-          <Reveal delay={200}>
+          <Reveal delay={260}>
             <p className="mt-6 text-white/70 max-w-2xl text-lg leading-relaxed">{HERO.lead}</p>
           </Reveal>
 
-          <Reveal delay={300}>
+          <Reveal delay={390}>
             <div className="flex flex-wrap gap-12 mt-14">
               {STATS.map((s) => (
                 <div key={s.label}>
@@ -176,20 +188,79 @@ export default function About() {
       </section>
 
       {/* ---------------- Story ---------------- */}
-      <section className="relative max-w-3xl mx-auto px-5 py-20">
+      <section className="relative max-w-6xl mx-auto px-5 py-24">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute top-10 left-[-120px] w-[380px] h-[380px] rounded-full bg-gold/20 blur-[120px]" />
         </div>
 
-        <Reveal>
-          <div className="h-1 w-12 bg-gold rounded-full mb-6" />
-        </Reveal>
+        <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-12 lg:gap-16 items-start">
+          {/* The narrative */}
+          <div>
+            <Reveal>
+              <div className="h-1 w-12 bg-gold rounded-full mb-6" />
+              <h2 className="font-display text-3xl font-bold mb-6 leading-tight">
+                Filling a gap the industry kept ignoring.
+              </h2>
+            </Reveal>
 
-        {STORY.map((paragraph, i) => (
-          <Reveal key={i} delay={i * 120}>
-            <p className="text-ink/70 text-lg leading-relaxed mb-5">{paragraph}</p>
+            {STORY.map((paragraph, i) => (
+              <Reveal key={i} delay={i * 156}>
+                <p className="text-ink/70 text-lg leading-relaxed mb-5">{paragraph}</p>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* Fills what was dead space with the thing candidates
+              actually want: what we build with, and where we sit. */}
+          <Reveal delay={200}>
+            <div className="relative">
+              {/* Hexagon motif, echoing the logo and the page background. */}
+              <svg
+                className="absolute -top-10 -right-6 w-44 h-44 text-gold/25 pointer-events-none"
+                viewBox="0 0 100 100"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M50 4 L90 27 L90 73 L50 96 L10 73 L10 27 Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+              </svg>
+
+              <div className="relative rounded-2xl border border-ink/10 bg-white/80 backdrop-blur-sm p-7">
+                <p className="font-display text-lg font-semibold leading-snug mb-2">
+                  “Lean software, built on business-technology alignment from the get-go.”
+                </p>
+                <p className="text-ink/50 text-sm mb-7">How we've worked since day one.</p>
+
+                <dl className="space-y-5">
+                  {[
+                    { term: "Headquarters", detail: "Sri Jayawardenepura Kotte, Sri Lanka" },
+                    { term: "Second office", detail: "New York, United States" },
+                    { term: "Origins", detail: "Silicon Valley and multinational enterprise" },
+                    { term: "Focus", detail: "UI/UX · AI & ML · Enterprise APIs" },
+                  ].map((item) => (
+                    <div key={item.term} className="flex gap-4">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-gold shrink-0" />
+                      <div>
+                        <dt className="text-xs uppercase tracking-wider text-ink/40 mb-0.5">
+                          {item.term}
+                        </dt>
+                        <dd className="text-sm font-medium">{item.detail}</dd>
+                      </div>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
           </Reveal>
-        ))}
+        </div>
       </section>
 
       {/* ---------------- Pillars ---------------- */}
@@ -201,7 +272,7 @@ export default function About() {
 
         <div className="relative max-w-6xl mx-auto px-5 py-20 grid gap-5 md:grid-cols-2">
           {PILLARS.map((p, i) => (
-            <Reveal key={p.tag} delay={i * 100}>
+            <Reveal key={p.tag} delay={i * 130}>
               <div className="group h-full rounded-2xl border border-ink/10 bg-white/70 backdrop-blur-md p-7 transition-all duration-300 hover:border-gold hover:bg-white hover:-translate-y-1 hover:shadow-lg">
                 <p className="text-gold-700 font-semibold text-xs uppercase tracking-wider mb-3">
                   {p.tag}
@@ -232,7 +303,7 @@ export default function About() {
 
         <div className="grid gap-4 md:grid-cols-3">
           {PRACTICES.map((item, i) => (
-            <Reveal key={item.title} delay={i * 120}>
+            <Reveal key={item.title} delay={i * 156}>
               <div className="group h-full rounded-2xl bg-ink text-white p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl relative overflow-hidden">
                 <div className="pointer-events-none absolute -top-20 -right-16 w-52 h-52 rounded-full bg-gold/30 blur-[70px] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 <div className="relative">
@@ -267,7 +338,7 @@ export default function About() {
             <div className="absolute left-[18px] top-3 bottom-3 w-px bg-ink/10" aria-hidden="true" />
 
             {HIRING_STEPS.map((s, i) => (
-              <Reveal key={s.title} delay={i * 90}>
+              <Reveal key={s.title} delay={i * 117}>
                 <li className="relative flex gap-5 pb-8 last:pb-0">
                   <span className="relative z-10 shrink-0 w-9 h-9 rounded-full bg-gold text-ink font-display font-bold text-sm flex items-center justify-center ring-4 ring-white">
                     {i + 1}
@@ -291,7 +362,7 @@ export default function About() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           {OFFICES.map((office, i) => (
-            <Reveal key={office.country} delay={i * 120}>
+            <Reveal key={office.country} delay={i * 156}>
               <div className="h-full rounded-2xl border border-ink/10 p-7 transition-all duration-300 hover:border-gold hover:shadow-md">
                 <h3 className="font-display font-semibold text-lg mb-3 flex items-center gap-2">
                   {office.country} <span>{office.flag}</span>
@@ -317,7 +388,17 @@ export default function About() {
           <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[620px] h-[420px] rounded-full bg-gradient-to-b from-gold via-gold-600 to-transparent opacity-25 blur-[120px]" />
         </div>
 
-        <div className="relative max-w-2xl mx-auto px-5 py-20 text-center">
+        {/* Same long ramp, flipped, so this section rises out of the
+            white above it. */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-72"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.08) 48%, rgba(255,255,255,0.22) 62%, rgba(255,255,255,0.48) 74%, rgba(255,255,255,0.78) 86%, rgba(255,255,255,0.95) 94%, #ffffff 100%)",
+          }}
+        />
+
+        <div className="relative max-w-2xl mx-auto px-5 pt-32 pb-20 text-center">
           <Reveal>
             <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
               Ready to make a difference?
@@ -327,7 +408,7 @@ export default function About() {
               values. Have a look at what's open and become part of our journey toward
               creating technology that empowers businesses and enriches lives.
             </p>
-            <Link to="/" className="btn-primary !px-7 !py-3">
+            <Link to="/#open-positions" className="btn-primary !px-7 !py-3">
               See open roles
             </Link>
           </Reveal>

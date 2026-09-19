@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
-import Logo from "./Logo";
 import { LinkedInIcon, FacebookIcon, InstagramIcon, TikTokIcon, YoutubeIcon } from "./SocialIcons";
 
 // ---------------------------------------------------------------------
-// EDIT ME — replace these placeholder values with Altrium's real details.
-// Everything the footer displays is driven from this one block.
+// EDIT ME — everything the footer displays is driven from this block.
 // ---------------------------------------------------------------------
 const COMPANY = {
   email: "hello@altrium.io",
@@ -26,18 +24,22 @@ const OFFICES = [
 ];
 
 const LEARN_MORE_LINKS = [
-  { label: "About Us", href: "#" },
-  { label: "Careers", to: "/" },
-  { label: "Contact Us", href: "#" },
+  { label: "About Us", to: "/about" },
+  { label: "Careers", to: "/#open-positions" },
+  { label: "Contact Us", href: `mailto:${COMPANY.email}` },
   { label: "Altrium Legal", href: "#" },
 ];
 
 const SOCIALS = [
-  { Icon: LinkedInIcon, href: "#", label: "LinkedIn" },
-  { Icon: FacebookIcon, href: "#", label: "Facebook" },
-  { Icon: InstagramIcon, href: "#", label: "Instagram" },
-  { Icon: TikTokIcon, href: "#", label: "TikTok" },
-  { Icon: YoutubeIcon, href: "#", label: "YouTube" },
+  { Icon: LinkedInIcon, href: "https://www.linkedin.com/company/altrium-io/", label: "LinkedIn" },
+  { Icon: FacebookIcon, href: "https://web.facebook.com/altrium.io", label: "Facebook" },
+  { Icon: InstagramIcon, href: "https://www.instagram.com/altrium.io/", label: "Instagram" },
+  { Icon: TikTokIcon, href: "https://www.tiktok.com/@altrium.io", label: "TikTok" },
+  {
+    Icon: YoutubeIcon,
+    href: "https://www.youtube.com/channel/UCayR9MVt2SkJ7ZucmA6nyQw",
+    label: "YouTube",
+  },
 ];
 // ---------------------------------------------------------------------
 
@@ -48,7 +50,8 @@ export default function Footer() {
         {/* Brand column */}
         <div>
           <Link to="/" className="flex items-center gap-2.5 mb-6">
-            <Logo className="h-9 w-auto" />
+            {/* Footer uses the full wordmark rather than the navbar icon. */}
+            <img src="/Altrium-logo.png" alt="Altrium" className="h-10 w-auto" />
           </Link>
 
           <p className="text-white/40 text-sm mb-3">Follow our socials</p>
@@ -59,7 +62,7 @@ export default function Footer() {
                 href={href}
                 aria-label={label}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="w-9 h-9 rounded-md bg-white/10 hover:bg-gold hover:text-ink flex items-center justify-center transition-colors"
               >
                 <Icon />
@@ -67,7 +70,9 @@ export default function Footer() {
             ))}
           </div>
 
-          <p className="text-white/30 text-sm">© {new Date().getFullYear()} Altrium. All rights reserved.</p>
+          <p className="text-white/30 text-sm">
+            © {new Date().getFullYear()} Altrium. All rights reserved.
+          </p>
         </div>
 
         {/* Office columns */}

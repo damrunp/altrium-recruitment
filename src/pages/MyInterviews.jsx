@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { formatDateTime } from "../lib/interviews";
+import GradientBackdrop from "../components/GradientBackdrop";
+
+// Shared glass treatment, matching the dashboard and applicants pages.
+const GLASS = "rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl";
 
 export default function MyInterviews() {
   const { user, profile } = useAuth();
@@ -37,42 +41,49 @@ export default function MyInterviews() {
   const done = interviews.filter((i) => i.status === "completed");
 
   return (
-    <div className="max-w-4xl mx-auto px-5 py-12">
-      <div className="flex items-start justify-between gap-3 flex-wrap mb-8">
-        <div>
-          <h1 className="font-display text-2xl font-bold mb-1">My Interviews</h1>
-          <p className="text-ink/50">
-            Interviews assigned to you{profile?.role === "management" ? " as department manager" : ""}.
-          </p>
+    <div className="relative overflow-hidden min-h-[80vh]">
+      <GradientBackdrop />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-5 py-12">
+        <div className="flex items-start justify-between gap-3 flex-wrap mb-8">
+          <div>
+            <h1 className="font-display text-2xl font-bold mb-1">My Interviews</h1>
+            <p className="text-ink/50">
+              Interviews assigned to you
+              {profile?.role === "management" ? " as department manager" : ""}.
+            </p>
+          </div>
+          <Link to="/availability" className="btn-outline !px-4 !py-2 text-sm">
+            Set my availability
+          </Link>
         </div>
-        <Link to="/availability" className="btn-outline !px-4 !py-2 text-sm">
-          Set my availability
-        </Link>
+
+        {loading && <p className="text-ink/50">Loading…</p>}
+
+        {!loading && interviews.length === 0 && (
+          <div className={`${GLASS} p-10 text-center`}>
+            <p className="text-ink/50 mb-4">
+              Nothing scheduled yet. HR books interviews inside the hours you've set.
+            </p>
+            <Link to="/availability" className="btn-primary">
+              Set my availability
+            </Link>
+          </div>
+        )}
+
+        {needsFeedback.length > 0 && (
+          <Section
+            title="Waiting on your feedback"
+            hint="These have already taken place. Submitting your evaluation marks them complete."
+            interviews={needsFeedback}
+            highlight
+          />
+        )}
+
+        {upcoming.length > 0 && <Section title="Upcoming" interviews={upcoming} />}
+
+        {done.length > 0 && <Section title="Completed" interviews={done} muted />}
       </div>
-
-      {loading && <p className="text-ink/50">Loading…</p>}
-
-      {!loading && interviews.length === 0 && (
-        <div className="card p-10 text-center">
-          <p className="text-ink/50 mb-4">
-            Nothing scheduled yet. HR books interviews inside the hours you've set.
-          </p>
-          <Link to="/availability" className="btn-primary">Set my availability</Link>
-        </div>
-      )}
-
-      {needsFeedback.length > 0 && (
-        <Section
-          title="Waiting on your feedback"
-          hint="These have already taken place. Submitting your evaluation marks them complete."
-          interviews={needsFeedback}
-          highlight
-        />
-      )}
-
-      {upcoming.length > 0 && <Section title="Upcoming" interviews={upcoming} />}
-
-      {done.length > 0 && <Section title="Completed" interviews={done} muted />}
     </div>
   );
 }
@@ -91,14 +102,16 @@ function Section({ title, hint, interviews, highlight, muted }) {
           return (
             <div
               key={i.interview_id}
-              className={`card p-5 flex items-center justify-between gap-4 flex-wrap ${
-                highlight ? "border-gold/50" : ""
+              className={`${GLASS} p-5 flex items-center justify-between gap-4 flex-wrap ${
+                highlight ? "!border-gold/60" : ""
               } ${muted ? "opacity-70" : ""}`}
             >
               <div className="min-w-[220px]">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold">{i.applications?.full_name}</p>
-                  <span className="badge bg-ink/5 text-ink/60">{i.interview_stages?.name}</span>
+                  <span className="badge bg-ink/5 text-ink/60">
+                    {i.interview_stages?.name}
+                  </span>
                   {i.status === "completed" && (
                     <span
                       className={`badge ${

@@ -2,11 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import FinalizeDecisionModal from "../components/FinalizeDecisionModal";
+import StatusBadge from "../components/StatusBadge";
+import GradientBackdrop from "../components/GradientBackdrop";
 import { formatDateTime, scorePercent, scoreStyle, RECOMMENDATIONS } from "../lib/interviews";
 
 const RECOMMENDATION_LABELS = Object.fromEntries(
   RECOMMENDATIONS.map((r) => [r.value, r.label])
 );
+
+// Shared glass treatment, matching the job listings and dashboard.
+const GLASS = "rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl";
 
 export default function EvaluationDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -63,17 +68,16 @@ export default function EvaluationDashboard() {
     loadDetails(applicationId);
   };
 
-  // Ready once both stages are completed and passed.
   const readyToFinalize = (r) =>
     r.technical_status === "completed" &&
     r.managerial_status === "completed" &&
     r.technical_result === "pass" &&
     r.managerial_result === "pass";
 
-  const anyFailed = (r) =>
-    r.technical_result === "fail" || r.managerial_result === "fail";
+  const anyFailed = (r) => r.technical_result === "fail" || r.managerial_result === "fail";
 
-  const isFinal = (r) => r.status === "hired" || r.status === "rejected";
+  const isFinal = (r) =>
+    r.status === "hired" || r.status === "rejected" || r.status === "blocked";
 
   const visible = useMemo(() => {
     let list = jobFilter === "all" ? [...rows] : rows.filter((r) => r.job_id === jobFilter);
@@ -95,176 +99,188 @@ export default function EvaluationDashboard() {
   }, [rows, jobFilter, sortBy]);
 
   return (
-    <div className="max-w-6xl mx-auto px-5 py-12">
-      <Link to="/dashboard" className="text-sm text-ink/50 hover:text-gold-700">
-        ← Back to dashboard
-      </Link>
+    <div className="relative overflow-hidden min-h-[80vh]">
+      <GradientBackdrop />
 
-      <h1 className="font-display text-2xl font-bold mt-3 mb-1">Candidate Evaluations</h1>
-      <p className="text-ink/50 mb-6">
-        Scores from both interview stages. Open a row for the per-criterion breakdown.
-      </p>
+      <div className="relative z-10 max-w-6xl mx-auto px-5 py-12">
+        <Link to="/dashboard" className="text-sm text-ink/50 hover:text-gold-700">
+          ← Back to dashboard
+        </Link>
 
-      {/* Filters */}
-      <div className="card p-5 mb-6 flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-ink/60">Job</label>
-          <select
-            value={jobFilter}
-            onChange={(e) =>
-              setSearchParams(e.target.value === "all" ? {} : { job: e.target.value })
-            }
-            className="input-field !py-2 text-sm w-auto"
-          >
-            <option value="all">All jobs</option>
-            {jobs.map((j) => (
-              <option key={j.job_id} value={j.job_id}>
-                {j.title}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-ink/60">Sort by</label>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="input-field !py-2 text-sm w-auto"
-          >
-            <option value="overall_desc">Overall score</option>
-            <option value="technical_desc">Technical score</option>
-            <option value="managerial_desc">Managerial score</option>
-            <option value="name">Name</option>
-          </select>
-        </div>
-
-        <p className="text-sm text-ink/50 ml-auto">
-          {visible.length} candidate{visible.length === 1 ? "" : "s"}
+        <h1 className="font-display text-2xl font-bold mt-3 mb-1">Candidate Evaluations</h1>
+        <p className="text-ink/50 mb-6">
+          Scores from both interview stages. Open a row for the per-criterion breakdown.
         </p>
-      </div>
 
-      {loading && <p className="text-ink/50">Loading…</p>}
+        {/* Filters */}
+        <div className={`${GLASS} p-5 mb-6 flex flex-wrap items-center gap-4`}>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-ink/60">Job</label>
+            <select
+              value={jobFilter}
+              onChange={(e) =>
+                setSearchParams(e.target.value === "all" ? {} : { job: e.target.value })
+              }
+              className="input-field !py-2 text-sm w-auto"
+            >
+              <option value="all">All jobs</option>
+              {jobs.map((j) => (
+                <option key={j.job_id} value={j.job_id}>
+                  {j.title}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {!loading && visible.length === 0 && (
-        <div className="card p-10 text-center text-ink/50">
-          No candidates have reached the interview stage yet.
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-ink/60">Sort by</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="input-field !py-2 text-sm w-auto"
+            >
+              <option value="overall_desc">Overall score</option>
+              <option value="technical_desc">Technical score</option>
+              <option value="managerial_desc">Managerial score</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
+
+          <p className="text-sm text-ink/50 ml-auto">
+            {visible.length} candidate{visible.length === 1 ? "" : "s"}
+          </p>
         </div>
-      )}
 
-      <div className="space-y-3">
-        {visible.map((r) => {
-          const overallPct = scorePercent(r.overall_score, r.overall_max);
-          const isOpen = expanded === r.application_id;
-          const canFinalize = readyToFinalize(r) && !isFinal(r);
-          const canReject = anyFailed(r) && !isFinal(r);
+        {loading && <p className="text-ink/50">Loading…</p>}
 
-          return (
-            <div key={r.application_id} className="card overflow-hidden">
-              <div className="p-5">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <button
-                    onClick={() => toggle(r.application_id)}
-                    className="text-left min-w-[200px] flex-1"
-                  >
-                    <p className="font-semibold">{r.full_name}</p>
-                    <p className="text-sm text-ink/50">{r.email}</p>
-                    <span className="badge bg-ink/5 text-ink/60 mt-1.5 inline-block capitalize">
-                      {r.status}
-                    </span>
-                  </button>
+        {!loading && visible.length === 0 && (
+          <div className={`${GLASS} p-10 text-center text-ink/50`}>
+            No candidates have reached the interview stage yet.
+          </div>
+        )}
 
-                  <div className="flex items-center gap-6 flex-wrap text-sm">
-                    <StageScore
-                      label="Technical"
-                      score={r.technical_score}
-                      max={r.technical_max}
-                      result={r.technical_result}
-                      status={r.technical_status}
-                    />
-                    <StageScore
-                      label="Managerial"
-                      score={r.managerial_score}
-                      max={r.managerial_max}
-                      result={r.managerial_result}
-                      status={r.managerial_status}
-                    />
+        <div className="space-y-3">
+          {visible.map((r) => {
+            const overallPct = scorePercent(r.overall_score, r.overall_max);
+            const isOpen = expanded === r.application_id;
+            const canFinalize = readyToFinalize(r) && !isFinal(r);
+            const canReject = anyFailed(r) && !isFinal(r);
 
-                    <div className="text-center">
-                      <p className="text-xs text-ink/40 mb-1">Overall</p>
-                      <span className={`badge ${scoreStyle(overallPct)}`}>
-                        {r.overall_max ? `${r.overall_score} / ${r.overall_max}` : "—"}
-                      </span>
-                    </div>
-
+            return (
+              <div key={r.application_id} className={`${GLASS} overflow-hidden`}>
+                <div className="p-5">
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
                     <button
                       onClick={() => toggle(r.application_id)}
-                      className="text-ink/30 text-lg px-1"
-                      aria-label="Toggle breakdown"
+                      className="text-left min-w-[200px] flex-1"
                     >
-                      {isOpen ? "▴" : "▾"}
+                      <p className="font-semibold">{r.full_name}</p>
+                      <p className="text-sm text-ink/50">{r.email}</p>
+                      {/* Shared badge, so hired / rejected / interview /
+                          blocked read the same colours as everywhere else. */}
+                      <span className="mt-1.5 inline-block">
+                        <StatusBadge status={r.status} />
+                      </span>
                     </button>
+
+                    <div className="flex items-center gap-6 flex-wrap text-sm">
+                      <StageScore
+                        label="Technical"
+                        score={r.technical_score}
+                        max={r.technical_max}
+                        result={r.technical_result}
+                        status={r.technical_status}
+                      />
+                      <StageScore
+                        label="Managerial"
+                        score={r.managerial_score}
+                        max={r.managerial_max}
+                        result={r.managerial_result}
+                        status={r.managerial_status}
+                      />
+
+                      <div className="text-center">
+                        <p className="text-xs text-ink/40 mb-1">Overall</p>
+                        <span className={`badge ${scoreStyle(overallPct)}`}>
+                          {r.overall_max ? `${r.overall_score} / ${r.overall_max}` : "—"}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => toggle(r.application_id)}
+                        className="text-ink/30 text-lg px-1"
+                        aria-label="Toggle breakdown"
+                      >
+                        {isOpen ? "▴" : "▾"}
+                      </button>
+                    </div>
                   </div>
+
+                  {(canFinalize || canReject) && (
+                    <div className="mt-4 pt-4 border-t border-white/60 flex items-center justify-between gap-3 flex-wrap">
+                      <p className="text-sm">
+                        {canFinalize ? (
+                          <span className="text-green-700 font-medium">
+                            Both stages passed — ready for your decision
+                          </span>
+                        ) : (
+                          <span className="text-red-700 font-medium">
+                            A stage was failed — ready for your decision
+                          </span>
+                        )}
+                      </p>
+                      <button
+                        onClick={() =>
+                          setFinalizing({
+                            application_id: r.application_id,
+                            full_name: r.full_name,
+                            email: r.email,
+                            jobs: { title: jobTitle(r.job_id) },
+                          })
+                        }
+                        className="btn-primary !px-4 !py-2 text-sm"
+                      >
+                        Finalize decision
+                      </button>
+                    </div>
+                  )}
+
+                  {isFinal(r) && (
+                    <div className="mt-4 pt-4 border-t border-white/60">
+                      <p className="text-sm text-ink/50">
+                        {r.status === "blocked" ? (
+                          <>Blocked — this candidate was hired for another role.</>
+                        ) : (
+                          <>
+                            Finalized as{" "}
+                            <span className="font-semibold capitalize">{r.status}</span>. The
+                            candidate has been emailed.
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {/* Finalize */}
-                {(canFinalize || canReject) && (
-                  <div className="mt-4 pt-4 border-t border-ink/10 flex items-center justify-between gap-3 flex-wrap">
-                    <p className="text-sm">
-                      {canFinalize ? (
-                        <span className="text-green-700 font-medium">
-                          Both stages passed — ready for your decision
-                        </span>
-                      ) : (
-                        <span className="text-red-700 font-medium">
-                          A stage was failed — ready for your decision
-                        </span>
-                      )}
-                    </p>
-                    <button
-                      onClick={() =>
-                        setFinalizing({
-                          application_id: r.application_id,
-                          full_name: r.full_name,
-                          email: r.email,
-                          jobs: { title: jobTitle(r.job_id) },
-                        })
-                      }
-                      className="btn-primary !px-4 !py-2 text-sm"
-                    >
-                      Finalize decision
-                    </button>
-                  </div>
-                )}
-
-                {isFinal(r) && (
-                  <div className="mt-4 pt-4 border-t border-ink/10">
-                    <p className="text-sm text-ink/50">
-                      Finalized as <span className="font-semibold capitalize">{r.status}</span>.
-                      The candidate has been emailed.
-                    </p>
+                {isOpen && (
+                  <div className="border-t border-white/60 p-5 bg-white/35 backdrop-blur-md">
+                    <Breakdown evaluations={details[r.application_id]} />
                   </div>
                 )}
               </div>
+            );
+          })}
+        </div>
 
-              {isOpen && (
-                <div className="border-t border-ink/10 p-5 bg-ink/[0.015]">
-                  <Breakdown evaluations={details[r.application_id]} />
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {finalizing && (
+          <FinalizeDecisionModal
+            application={finalizing}
+            summary={rows.find((r) => r.application_id === finalizing.application_id)}
+            onClose={() => setFinalizing(null)}
+            onDone={load}
+          />
+        )}
       </div>
-
-      {finalizing && (
-        <FinalizeDecisionModal
-          application={finalizing}
-          summary={rows.find((r) => r.application_id === finalizing.application_id)}
-          onClose={() => setFinalizing(null)}
-          onDone={load}
-        />
-      )}
     </div>
   );
 }
@@ -338,9 +354,7 @@ function Breakdown({ evaluations }) {
               </div>
               <div className="flex gap-2">
                 <dt className="text-ink/40">Recommendation</dt>
-                <dd className="font-medium">
-                  {RECOMMENDATION_LABELS[ev.recommendation] || "—"}
-                </dd>
+                <dd className="font-medium">{RECOMMENDATION_LABELS[ev.recommendation] || "—"}</dd>
               </div>
               <div className="flex gap-2">
                 <dt className="text-ink/40">Submitted</dt>
@@ -349,7 +363,7 @@ function Breakdown({ evaluations }) {
             </dl>
 
             {ev.comments && (
-              <p className="mt-3 text-sm text-ink/70 bg-white rounded-lg border border-ink/10 px-3 py-2 whitespace-pre-line">
+              <p className="mt-3 text-sm text-ink/70 bg-white/70 backdrop-blur-sm rounded-lg border border-white/70 px-3 py-2 whitespace-pre-line">
                 {ev.comments}
               </p>
             )}

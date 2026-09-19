@@ -10,6 +10,7 @@ import {
   formatDateTime,
   formatTime,
 } from "../lib/interviews";
+import GradientBackdrop from "../components/GradientBackdrop";
 
 const DURATIONS = [30, 45, 60, 90];
 
@@ -157,6 +158,25 @@ export default function ScheduleInterview() {
       return;
     }
 
+    // Now that the date, time, interviewer and link exist, tell the
+    // candidate. Sending on the status change alone would email them
+    // before any of those details were known.
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      await fetch("/api/send-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ applicationId, status: "interview" }),
+      });
+    } catch (err) {
+      console.warn("interview notification failed", err);
+    }
+
     navigate(`/dashboard/jobs/${application.job_id}/applicants`);
   };
 
@@ -174,7 +194,9 @@ export default function ScheduleInterview() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-5 py-12">
+    <div className="relative overflow-hidden min-h-[80vh]">
+      <GradientBackdrop />
+      <div className="relative z-10 max-w-3xl mx-auto px-5 py-12">
       <Link
         to={`/dashboard/jobs/${application.job_id}/applicants`}
         className="text-sm text-ink/50 hover:text-gold-700"
@@ -193,7 +215,7 @@ export default function ScheduleInterview() {
 
       {/* Already booked */}
       {existing.length > 0 && (
-        <div className="card p-5 mb-6">
+        <div className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-5 mb-6">
           <h2 className="font-display font-semibold mb-3">Interviews so far</h2>
           <div className="space-y-2">
             {existing.map((i) => (
@@ -224,7 +246,7 @@ export default function ScheduleInterview() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Stage */}
-        <div className="card p-5">
+        <div className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-5">
           <label className="text-sm font-medium mb-2 block">Interview stage</label>
           <div className="grid sm:grid-cols-2 gap-3">
             {stages.map((s) => {
@@ -254,7 +276,7 @@ export default function ScheduleInterview() {
 
         {/* Interviewer */}
         {stage && (
-          <div className="card p-5">
+          <div className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-5">
             <label className="text-sm font-medium mb-1 block">Assign interviewer</label>
             <p className="text-xs text-ink/50 mb-3">
               This stage is run by someone with the {stage.conducted_by} role.
@@ -284,7 +306,7 @@ export default function ScheduleInterview() {
 
         {/* Duration + slots */}
         {interviewerId && (
-          <div className="card p-5">
+          <div className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-5">
             <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
               <div>
                 <label className="text-sm font-medium block">Pick a free slot</label>
@@ -352,7 +374,7 @@ export default function ScheduleInterview() {
 
         {/* Meeting details */}
         {selectedSlot && (
-          <div className="card p-5 space-y-4">
+          <div className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-5 space-y-4">
             <div className="rounded-lg bg-gold/10 px-4 py-3 text-sm">
               <span className="font-semibold">{formatDateTime(selectedSlot.start)}</span>
               <span className="text-ink/60"> — {duration} minutes</span>
@@ -387,6 +409,7 @@ export default function ScheduleInterview() {
           </div>
         )}
       </form>
+    </div>
     </div>
   );
 }

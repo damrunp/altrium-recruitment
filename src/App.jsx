@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ChatWidget from "./components/ChatWidget";
 import HoneycombBackground from "./components/HoneycombBackground";
+import ScrollToTop from "./components/ScrollToTop";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 import Home from "./pages/Home";
@@ -24,6 +25,7 @@ import NotFound from "./pages/NotFound";
 export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <HoneycombBackground />
       <Navbar />
       <main className="flex-1">

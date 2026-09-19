@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import GradientBackdrop from "../components/GradientBackdrop";
+
+const GLASS = "rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl";
 
 export default function JobFormPage() {
   const { jobId } = useParams();
@@ -59,48 +62,92 @@ export default function JobFormPage() {
     navigate("/dashboard");
   };
 
-  if (loading) return <p className="max-w-2xl mx-auto px-5 py-16 text-ink/50">Loading…</p>;
+  if (loading) {
+    return (
+      <div className="relative overflow-hidden min-h-[80vh]">
+        <GradientBackdrop />
+        <p className="relative z-10 max-w-2xl mx-auto px-5 py-16 text-ink/50">Loading…</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto px-5 py-12">
-      <Link to="/dashboard" className="text-sm text-ink/50 hover:text-gold-700">← Back to dashboard</Link>
+    <div className="relative overflow-hidden min-h-[80vh]">
+      <GradientBackdrop />
 
-      <h1 className="font-display text-2xl font-bold mt-3 mb-8">
-        {isEdit ? "Edit Job Posting" : "Post a New Job"}
-      </h1>
+      <div className="relative z-10 max-w-2xl mx-auto px-5 py-12">
+        <Link to="/dashboard" className="text-sm text-ink/50 hover:text-gold-700">
+          ← Back to dashboard
+        </Link>
 
-      {error && <div className="mb-5 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>}
+        <h1 className="font-display text-2xl font-bold mt-3 mb-8">
+          {isEdit ? "Edit Job Posting" : "Post a New Job"}
+        </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="text-sm font-medium mb-1 block">Job title</label>
-          <input required className="input-field" value={form.title} onChange={update("title")} />
-        </div>
+        {error && (
+          <div className="mb-5 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>
+        )}
 
-        <div>
-          <label className="text-sm font-medium mb-1 block">Location</label>
-          <input className="input-field" placeholder="e.g. Lahore, Pakistan / Remote" value={form.location || ""} onChange={update("location")} />
-        </div>
+        <form onSubmit={handleSubmit} className={`${GLASS} p-6 sm:p-8 space-y-4`}>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Job title</label>
+            <input
+              required
+              className="input-field bg-white/70"
+              value={form.title}
+              onChange={update("title")}
+            />
+          </div>
 
-        <div>
-          <label className="text-sm font-medium mb-1 block">Description</label>
-          <textarea required rows={4} className="input-field" value={form.description} onChange={update("description")} />
-        </div>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Location</label>
+            <input
+              className="input-field bg-white/70"
+              placeholder="e.g. Colombo, Sri Lanka / Remote"
+              value={form.location || ""}
+              onChange={update("location")}
+            />
+          </div>
 
-        <div>
-          <label className="text-sm font-medium mb-1 block">Requirements</label>
-          <textarea rows={4} className="input-field" value={form.requirements || ""} onChange={update("requirements")} />
-        </div>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Description</label>
+            <textarea
+              required
+              rows={4}
+              className="input-field bg-white/70"
+              value={form.description}
+              onChange={update("description")}
+            />
+          </div>
 
-        <div>
-          <label className="text-sm font-medium mb-1 block">Responsibilities</label>
-          <textarea rows={4} className="input-field" value={form.responsibilities || ""} onChange={update("responsibilities")} />
-        </div>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Requirements</label>
+            <textarea
+              rows={4}
+              className="input-field bg-white/70"
+              value={form.requirements || ""}
+              onChange={update("requirements")}
+            />
+            <p className="text-xs text-ink/40 mt-1">
+              These are matched against each candidate's CV to produce their match score.
+            </p>
+          </div>
 
-        <button disabled={saving} className="btn-primary w-full !py-3 mt-2">
-          {saving ? "Saving…" : isEdit ? "Save Changes" : "Post Job"}
-        </button>
-      </form>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Responsibilities</label>
+            <textarea
+              rows={4}
+              className="input-field bg-white/70"
+              value={form.responsibilities || ""}
+              onChange={update("responsibilities")}
+            />
+          </div>
+
+          <button disabled={saving} className="btn-primary w-full !py-3 mt-2">
+            {saving ? "Saving…" : isEdit ? "Save Changes" : "Post Job"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

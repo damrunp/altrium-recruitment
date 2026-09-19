@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import StatusBadge from "../components/StatusBadge";
 import FinalizeDecisionModal from "../components/FinalizeDecisionModal";
 import { formatDateTime } from "../lib/interviews";
+import GradientBackdrop from "../components/GradientBackdrop";
 
 const STATUS_PROGRESS_ORDER = ["pending", "shortlisted", "interview", "hired", "rejected"];
 
@@ -36,6 +37,7 @@ export default function Applicants() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [finalizing, setFinalizing] = useState(null);
   const [sortBy, setSortBy] = useState("score_desc");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -133,6 +135,7 @@ export default function Applicants() {
 
   const handleStatusChange = async (applicationId, status) => {
     setError("");
+    setNotice("");
     setUpdatingId(applicationId);
 
     const { error: updateError } = await supabase
@@ -140,7 +143,44 @@ export default function Applicants() {
       .update({ status, updated_at: new Date().toISOString() })
       .eq("application_id", applicationId);
 
-    if (updateError) setError(updateError.message);
+    if (updateError) {
+      setError(updateError.message);
+      await load();
+      setUpdatingId(null);
+      return;
+    }
+
+    // Tell the candidate. The status change is already saved, so a
+    // failure here is reported but doesn't undo anything — better a
+    // silent email than a status that won't stick.
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+
+      const res = await fetch("/api/send-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ applicationId, status }),
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const payload = await res.json();
+        if (!res.ok) {
+          setError(payload.error || "Status saved, but the email could not be sent.");
+        } else if (payload.emailedTo) {
+          setNotice(`Status updated. ${payload.emailedTo} has been notified.`);
+        }
+      } else {
+        // /api isn't running — `npm run dev` doesn't serve it.
+        console.warn("/api/send-status did not return JSON. Use `vercel dev` locally.");
+      }
+    } catch (err) {
+      console.warn("notification failed", err);
+    }
 
     await load();
     setUpdatingId(null);
@@ -174,7 +214,9 @@ export default function Applicants() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-5 py-12">
+    <div className="relative overflow-hidden min-h-[80vh]">
+      <GradientBackdrop />
+      <div className="relative z-10 max-w-5xl mx-auto px-5 py-12">
       <Link to="/dashboard" className="text-sm text-ink/50 hover:text-gold-700">
         ← Back to dashboard
       </Link>
@@ -193,8 +235,12 @@ export default function Applicants() {
         <div className="mb-5 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>
       )}
 
+      {notice && !error && (
+        <div className="mb-5 bg-green-50 text-green-700 text-sm px-4 py-3 rounded-lg">{notice}</div>
+      )}
+
       {/* Controls */}
-      <div className="card p-5 mb-6 flex flex-wrap items-center gap-4">
+      <div className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-5 mb-6 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-ink/60">Sort by</label>
           <select
@@ -255,7 +301,7 @@ export default function Applicants() {
       {loading && <p className="text-ink/50">Loading…</p>}
 
       {!loading && applications.length === 0 && (
-        <div className="card p-10 text-center text-ink/50">No applications yet for this job.</div>
+        <div className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-10 text-center text-ink/50">No applications yet for this job.</div>
       )}
 
       <div className="space-y-3">
@@ -267,7 +313,7 @@ export default function Applicants() {
           const isFinal = app.status === "hired" || app.status === "rejected";
 
           return (
-            <div key={app.application_id} className="card p-5">
+            <div key={app.application_id} className="rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl p-5">
               <div className="flex items-start justify-between flex-wrap gap-4">
                 <div className="min-w-[220px]">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -399,6 +445,7 @@ export default function Applicants() {
           onDone={load}
         />
       )}
+    </div>
     </div>
   );
 }
