@@ -47,15 +47,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden max-w-6xl mx-auto px-5 py-10">
-        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-gold/20 blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-gold-600/10 blur-[100px]" />
-        </div>
+      <section className="relative max-w-6xl mx-auto px-5 py-10">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h2 className="font-display text-2xl font-bold">Open Positions</h2>
           <input
-            className="input-field max-w-xs"
+            className="input-field max-w-xs bg-white/70 backdrop-blur-sm"
             placeholder="Search job title…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -65,7 +61,7 @@ export default function Home() {
         {loading && <p className="text-ink/50">Loading jobs…</p>}
 
         {!loading && filtered.length === 0 && (
-          <div className="card p-10 text-center text-ink/50">
+          <div className="card p-10 text-center text-ink/50 bg-white/70 backdrop-blur-sm">
             No open positions right now. Please check back soon.
           </div>
         )}
@@ -75,7 +71,9 @@ export default function Home() {
             <Link
               key={job.job_id}
               to={`/jobs/${job.job_id}`}
-              className="group flex items-center justify-between gap-6 rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md px-7 py-6 shadow-sm hover:border-gold hover:shadow-gold hover:bg-white/70 transition-all"
+              /* A thin gold ring on hover, no glow. The ring is drawn
+                 with the border itself so nothing shifts on hover. */
+              className="group flex items-center justify-between gap-6 rounded-2xl border border-ink/10 bg-white/70 backdrop-blur-md px-7 py-6 hover:border-gold hover:bg-white/90 transition-colors duration-200"
             >
               <div className="min-w-0">
                 <h3 className="font-display font-semibold text-lg mb-1.5 truncate">
@@ -86,7 +84,7 @@ export default function Home() {
                 </p>
               </div>
               <span className="shrink-0 text-gold-700 font-semibold text-sm group-hover:translate-x-1 transition-transform">
-                View & Apply →
+                View &amp; Apply →
               </span>
             </Link>
           ))}

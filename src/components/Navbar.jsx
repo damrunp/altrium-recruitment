@@ -13,7 +13,7 @@ export default function Navbar() {
   const canSeeDashboard = isHR || isManagement;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/55 backdrop-blur-xl backdrop-saturate-150 border-b border-white/40 text-ink shadow-[0_1px_16px_-8px_rgba(0,0,0,0.25)]">
+    <header className="sticky top-0 z-40 bg-white/40 backdrop-blur-2xl backdrop-saturate-150 border-b border-ink/10 text-ink shadow-[0_2px_24px_-12px_rgba(0,0,0,0.4)]">
       <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2.5 font-display font-bold text-xl">
           <Logo className="h-9 w-auto" />
