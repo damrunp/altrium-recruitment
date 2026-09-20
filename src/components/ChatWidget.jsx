@@ -212,11 +212,11 @@ export default function ChatWidget() {
       pushMessage(
         reply
           ? { role: "assistant", source: "ai", ...reply }
-          : { role: "assistant", ...fallbackReply(ctx) }
+          : { role: "assistant", ...fallbackReply() }
       );
     } catch (err) {
       console.warn("chat request failed", err);
-      pushMessage({ role: "assistant", ...fallbackReply(ctx) });
+      pushMessage({ role: "assistant", ...fallbackReply() });
     } finally {
       setThinking(false);
     }

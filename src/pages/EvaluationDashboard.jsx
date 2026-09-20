@@ -10,6 +10,10 @@ const RECOMMENDATION_LABELS = Object.fromEntries(
   RECOMMENDATIONS.map((r) => [r.value, r.label])
 );
 
+// The order statuses are ranked in when sorting by outcome — decided
+// hires first, then people still in play, with rejections last.
+const STATUS_ORDER = ["hired", "interview", "shortlisted", "pending", "blocked", "rejected"];
+
 // Shared glass treatment, matching the job listings and dashboard.
 const GLASS = "rounded-2xl border border-white/70 bg-white/55 backdrop-blur-xl";
 
@@ -92,8 +96,16 @@ export default function EvaluationDashboard() {
       list.sort((a, b) => (b.technical_score ?? -1) - (a.technical_score ?? -1));
     } else if (sortBy === "managerial_desc") {
       list.sort((a, b) => (b.managerial_score ?? -1) - (a.managerial_score ?? -1));
-    } else {
-      list.sort((a, b) => a.full_name.localeCompare(b.full_name));
+    } else if (sortBy === "status") {
+      list.sort((a, b) => {
+        const rank = (s) => {
+          const i = STATUS_ORDER.indexOf(s);
+          return i === -1 ? STATUS_ORDER.length : i;
+        };
+        const diff = rank(a.status) - rank(b.status);
+        // Within a status, best overall score first.
+        return diff !== 0 ? diff : (b.overall_score ?? 0) - (a.overall_score ?? 0);
+      });
     }
     return list;
   }, [rows, jobFilter, sortBy]);
@@ -140,9 +152,9 @@ export default function EvaluationDashboard() {
               className="input-field !py-2 text-sm w-auto"
             >
               <option value="overall_desc">Overall score</option>
+              <option value="status">Outcome (hired → rejected)</option>
               <option value="technical_desc">Technical score</option>
               <option value="managerial_desc">Managerial score</option>
-              <option value="name">Name</option>
             </select>
           </div>
 

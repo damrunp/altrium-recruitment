@@ -36,7 +36,7 @@ const TRUST_SIGNALS = [
 
 // How far down the dark region reaches before it dissolves into the
 // warm surface. Raise it if the hero grows taller.
-const DARK_HEIGHT = 1180;
+const DARK_HEIGHT = 1560;
 
 // Sticky navbar height (h-16 = 64px) plus a little breathing room.
 const NAV_OFFSET = 88;

@@ -27,7 +27,7 @@ const LEARN_MORE_LINKS = [
   { label: "About Us", to: "/about" },
   { label: "Careers", to: "/#open-positions" },
   { label: "Contact Us", href: `mailto:${COMPANY.email}` },
-  { label: "Altrium Legal", href: "#" },
+  { label: "Altrium Legal", href: "https://www.altrium.io/terms" },
 ];
 
 const SOCIALS = [
@@ -51,7 +51,7 @@ export default function Footer() {
         <div>
           <Link to="/" className="flex items-center gap-2.5 mb-6">
             {/* Footer uses the full wordmark rather than the navbar icon. */}
-            <img src="/Altrium-logo.png" alt="Altrium" className="h-10 w-auto" />
+            <img src="/altrium-logo-white.png" alt="Altrium" className="h-10 w-auto" />
           </Link>
 
           <p className="text-white/40 text-sm mb-3">Follow our socials</p>
@@ -104,7 +104,14 @@ export default function Footer() {
                     {link.label}
                   </Link>
                 ) : (
-                  <a href={link.href} className="hover:text-gold transition-colors">
+                  <a
+                    href={link.href}
+                    /* mailto: links must stay in the same tab; external
+                       pages open in a new one so the site isn't lost. */
+                    target={link.href?.startsWith("http") ? "_blank" : undefined}
+                    rel={link.href?.startsWith("http") ? "noreferrer noopener" : undefined}
+                    className="hover:text-gold transition-colors"
+                  >
                     {link.label}
                   </a>
                 )}
